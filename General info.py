@@ -1,4 +1,5 @@
 import requests
+import json
 
 # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/Leocardia?api_key=RGAPI-d8f9e95d-c12b-4077-aa2a-b6d1b4cb7936
 
@@ -25,10 +26,18 @@ def requestsSummonerRankInfo(region, id, APIKey):
     response = requests.get(URL)
     return response.json()
 
+# https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/cjdHo3Gt0tf-EcwH9s0D0KEpORGX1LBPm5VyFNQC5U8OuIk?api_key=RGAPI-a915a7d5-1097-4743-b795-9f5c53258a14
+def requestsSummonerChampionMastery(region, id, APIKey):
+    URL = "https://" + region + "1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + id + "?api_key=" + APIKey
+    print("\n" + URL)
+
+    response = requests.get(URL)
+    return response.json()
+
 def main():
     region = "NA"
     summonerName = (str)(input("Type in your summoner Name without any space: "))
-    APIKey = "RGAPI-d8f9e95d-c12b-4077-aa2a-b6d1b4cb7936"
+    APIKey = "RGAPI-a915a7d5-1097-4743-b795-9f5c53258a14"
     
     ################################################################################
 
@@ -108,7 +117,6 @@ def main():
         flex_win_rate = ((flex_wins) / (flex_wins + flex_losses)) * 100
         print("your Rank level in Flex mode is: " + rank_flex_tier + " " + rank_flex_rank, flex_leaguePoints, "points\n")    
         print("In total you play", flex_wins+flex_losses,"rank flex games\n" + "you win", flex_wins,"games, " + "you loss", flex_losses,"games" + "\nyour flex win rate is: ", round(flex_win_rate, 3), "%")
-        
     elif queueType == "RANKED_SOLO_5x5":
         rank_solo_leagueId = SummonerRankInfo[0]['leagueId']
         rank_solo_leagueId = (str)(rank_solo_leagueId)
@@ -149,5 +157,24 @@ def main():
         except IndexError:
             print("\n*** " + summonerName + " did not start playing Rank Flex mode ***")       
     
+    ################################################################################
+    
+    with open('C:/Users/robin/Documents/Riot project/champion.json', 'rb') as f:
+        champion_info = json.load(f)
+    champion_name = champion_info['data'].keys()
+
+    SummonerChampionMastery = requestsSummonerChampionMastery(region, id, APIKey)
+    print(summonerName + "'s top 5 highest Mastery Score Champion: \n")
+    for i in range(0,5):
+        championId = SummonerChampionMastery[i]['championId']
+        championId = (str)(championId)
+        championLevel = SummonerChampionMastery[i]['championLevel']
+        championLevel =(str)(championLevel) 
+        championPoints = SummonerChampionMastery[i]['championPoints']    
+        championPoints = (str)(championPoints)
+        for x in champion_name:
+            if champion_info['data'][x]['key'] == championId:
+                print(x + ": " + "level " + championLevel + ", " + championPoints + " points\n")
+        
 if __name__ == "__main__":
     main()
